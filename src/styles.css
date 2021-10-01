@@ -1,0 +1,50 @@
+html {
+    background: red; 
+}
+
+.game-outer-container {
+    display: flex; 
+    flex-direction: column;
+}
+
+/* .in-game-menu {
+
+} */
+
+.drawstack-and-foundation-container {
+    display: flex; 
+    flex-direction: row; 
+}
+
+ .drawstack-displaystack-container {
+    display: flex; 
+    flex-direction: row; 
+    margin-right: 150px;
+}
+
+.drawstack { 
+    margin-right: 50px; 
+}
+
+.displaystack {
+
+}
+
+.foundation { 
+
+} 
+
+.tableau { 
+ display: flex; 
+ flex-direction: row; 
+} 
+
+.tableau-stack { 
+    display: flex; 
+    flex-direction: column; 
+    flex: 1 1 auto; 
+} 
+
+.card.selected {
+    filter: brightness(50%); 
+}
