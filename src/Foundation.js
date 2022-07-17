@@ -1,21 +1,14 @@
-import React, { Component } from 'react'; 
-import Stack from './Stack'; 
+import React from 'react';
+import FoundationStack from './FoundationStack';
 
-export default class Foundation extends Component {
-    constructor() { 
-        super(); 
-        this.class = {}; 
-    }
-    
-    render() {
-        return (
-            <div className={'foundation'}>
-                FOUNDATION
-                {/* <Stack location={'foundation'} /> 
-                <Stack location={'foundation'} /> 
-                <Stack location={'foundation'} /> 
-                <Stack location={'foundation'} />  */}
-            </div>
-        )
-    }
+export default function Foundation() {
+    return (
+        <div className={'foundation'}>
+            FOUNDATION
+            {/* <FoundationStack location={'foundation'} /> 
+            <FoundationStack location={'foundation'} /> 
+            <FoundationStack location={'foundation'} /> 
+            <FoundationStack location={'foundation'} />  */}
+        </div>
+    )
 }

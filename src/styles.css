@@ -11,22 +11,22 @@ html {
 
 } */
 
-.drawstack-and-foundation-container {
+.stock-and-foundation-container {
     display: flex; 
     flex-direction: row; 
 }
 
- .drawstack-displaystack-container {
+ .stock-waste-container {
     display: flex; 
     flex-direction: row; 
     margin-right: 150px;
 }
 
-.drawstack { 
+.stock { 
     margin-right: 50px; 
 }
 
-.displaystack {
+.waste {
 
 }
 

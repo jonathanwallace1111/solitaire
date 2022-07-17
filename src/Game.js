@@ -1,48 +1,34 @@
-import React, { Component } from 'react';
+
+import React, { useState, useEffect } from 'react'
 import InGameMenu from './InGameMenu'; 
-import DrawStack from './DrawStack'; 
+import Stock from './Stock';
+import Waste from './Waste'; 
 import Foundation from './Foundation'; 
 import Tableau from './Tableau'; 
 
-export default class Game extends Component {
-    constructor() { 
-        super(); 
-        this.state = {
-            deck: null, 
-            tableau: null, 
-            drawStack: null, 
-            foundation: [] 
-        }
+export default function Game() {
+    // const [deck, setDeck] = useState(null); 
+    // const [tableau, setTableau] = useState(null); 
+    // const [stock, setStock] = useState(null); 
+    const [waste, setWaste] = useState(null); 
+    const [foundation, setFoundation] = useState([]); 
 
-        this.prevMoveArr = []; 
+    let PrevMoveArr = []; 
 
-        this.newGame = this.newGame.bind(this); 
-        this.createDeck = this.createDeck.bind(this); 
-        this.shuffleDeck = this.shuffleDeck.bind(this); 
-        this.dealCards = this.dealCards.bind(this); 
-        this.selectCard = this.selectCard.bind(this); 
-        this.moveCard = this.moveCard.bind(this); 
-        this.undo = this.undo.bind(this); 
-    }
+    let tempDeck, tempDeckDeepCopy, shuffledDeck, dealtCardsArr; 
 
-    componentWillMount() {
-        this.newGame(); 
-    }
+    // useEffect( () => {
+  
+    //     tempDeck = createDeck(); 
+    //     tempDeckDeepCopy = JSON.parse(JSON.stringify(tempDeck)); 
 
-    newGame() { 
-        let tempDeck = this.createDeck(); 
-        let shuffledDeck = this.shuffleDeck(tempDeck); 
-        let dealtCardsArr = this.dealCards(shuffledDeck); 
-        let stateObject = {
-            deck: tempDeck, 
-            tableau: dealtCardsArr[0], 
-            drawStack: dealtCardsArr[1]
-        }
+    //     shuffledDeck = shuffleDeck(tempDeckDeepCopy); 
+    //     dealtCardsArr = dealCards(shuffledDeck);  
 
-        this.setState(stateObject); 
-    }
+    // }, []);
 
-    createDeck() { 
+
+    const createDeck = () => { 
         let suits = ['diamond', 'heart', 'club', 'spade'];
         let cardRanks = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
         let cardColor; 
@@ -64,10 +50,12 @@ export default class Game extends Component {
             }
         }
 
+        // console.log(tempDeck.length); 
+
         return tempDeck; 
     }
 
-    shuffleDeck(deck) {
+    const shuffleDeck = (deck) => {
         let shuffledDeck = []; 
 
         while (deck.length != 0) { 
@@ -79,37 +67,47 @@ export default class Game extends Component {
         return shuffledDeck; 
     }
 
-    dealCards(shuffledDeck) { 
-        let tableau = shuffledDeck.slice(0, 28);         
-        let drawStack = shuffledDeck.slice(28);
+    const dealCards = (shuffledDeck) => { 
+        let tempTableau = shuffledDeck.slice(0, 28);         
+        let tempStock = shuffledDeck.slice(28);
         
-        let dealtCardsArr = [tableau, drawStack]; 
+        let dealtCardsArr = [tempTableau, tempStock]; 
 
         return dealtCardsArr; 
     }
 
-    selectCard() { 
+    const selectCard = () => { 
 
     }
 
-    moveCard() { 
+    const moveCard = () => { 
         // record the move to an array for "undo" function. 
     }
 
-    undo() {
+    const undo = () => {
 
     }
 
-    render() {
-        return (
-            <div className={'game-outer-container'}>
-                <InGameMenu /> 
-                <div className={'drawstack-and-foundation-container'}>
-                    <DrawStack cardsArr={this.state.drawStack} /> 
-                    <Foundation cardsArr={this.state.foundation} /> 
-                </div>
-                <Tableau cardsArr={this.state.tableau} /> 
-            </div>
-        )
-    }
+    // Question for JP. 
+    tempDeck = createDeck(); 
+    tempDeckDeepCopy = JSON.parse(JSON.stringify(tempDeck)); 
+    shuffledDeck = shuffleDeck(tempDeckDeepCopy); 
+    dealtCardsArr = dealCards(shuffledDeck);  
+    const [deck, setDeck] = useState(tempDeck); 
+    const [tableau, setTableau] = useState(dealtCardsArr[0]); 
+    const [stock, setStock] = useState(dealtCardsArr[1]); 
+
+
+
+    return (
+        <div className={'game-outer-container'}>
+        <InGameMenu /> 
+        <div className={'stock-and-foundation-container'}>
+            <Stock cardsArr={stock} />
+            <Waste />  
+            <Foundation cardsArr={foundation} /> 
+        </div>
+        <Tableau cardsArr={tableau} /> 
+    </div>
+    )
 }

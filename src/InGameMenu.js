@@ -1,17 +1,10 @@
-import React, { Component } from 'react'
+import React from 'react'
 
-export default class InGameMenu extends Component {
-    constructor() {
-        super() 
-        this.state = {
-
-        }
-    }
-    render() {
-        return (
-            <div className={'in-game-menu'}>
-                In Game Menu
-            </div>
-        )
-    }
+export default function InGameMenu() {
+    return (
+        <div className={'in-game-menu'}>
+            In Game Menu
+        </div>
+    )
 }
+

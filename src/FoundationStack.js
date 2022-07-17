@@ -1,6 +1,6 @@
 import React from 'react'
 
-export default function Options() {
+export default function FoundationStack() {
     return (
         <div>
             
