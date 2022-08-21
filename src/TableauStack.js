@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import Card from './Card';
+import { GameContext } from './GameContext';
 
 export default function TableauStack(props) {
 
@@ -48,10 +49,20 @@ export default function TableauStack(props) {
 
     }
 
+    const gameContext = useContext(GameContext);
+
+    const getCardsJsx = () => {
+
+        return gameContext.getTableauStackCards(1).map(card => (
+            <Card key={`tableau-card-${card.id}`} identity={card} />
+        ))
+    }
+
     return (
         <div className={props.location + '-stack'}>
         STACK
            {cardComponentsArr}
+           {getCardsJsx()}
         </div>
     )
 }

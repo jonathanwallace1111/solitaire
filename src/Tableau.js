@@ -4,13 +4,12 @@ import TableauStack from './TableauStack';
 export default function Tableau(props) {
 
     const [stacksOfCardsArr, setStacksOfCardsArr] = useState([]); 
-    const [numOfStacks, setNumOfStacks] = useState(7); 
+    // const [numOfStacks, setNumOfStacks] = useState(7); 
 
     useEffect( () => {
-        // let tempCardsArr = [...props.cardsArr];
         let tempCardsArr = props.cardsArr;
 
-        let tempStackOfCardsArr = []; //better variable name. I think tempStacksArr might be better.
+        let tempStackOfCardsArr = [];
         let cardCount = 0; 
         let i = 0; 
 

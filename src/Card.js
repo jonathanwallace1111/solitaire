@@ -10,6 +10,8 @@ export default function Card(props) {
     const stackNum = props.cardObject.stackNum; //number from 1 to 7. Stock and Waste only has one stack, tableau has 7, foundation has 4
     const faceUpOrDown = props.cardObject.faceUpOrDown; // up or down
 
+    const identity = props.identity;
+
     const clickHandler = () => {
         let card = window.event.target;
         console.log(card.classList);
