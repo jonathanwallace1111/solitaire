@@ -9,24 +9,18 @@ export default function GameContextProvider({ children }) {
         return deckBuilder;
     }, {});
 
-
-
     const createDeck = () => {
         let cards = makeCards();
         let shuffledCards = shuffleCards(cards);
         let shuffledCardsWithLocations = assignCardsLocations(shuffledCards);
-        let shuffledCardsWithLocationsAndStacks = assignCardsStacks(shuffledCardsWithLocations);
-        //this statement actually puts the cards in order by key, though the variable name still includes "shuffled"; 
-        let reorderedDeckArray = shuffledCardsWithLocationsAndStacks.sort((a, b) => {
+        let shuffledCardsWithLocationsAndStacks = assignCardsStacks(shuffledCardsWithLocations)
+        let deckArrayReorderedByKey = shuffledCardsWithLocationsAndStacks.sort((a, b) => {
             return a.key - b.key
         })
-
-        let completedDeckObj = deckArrayToObject(reorderedDeckArray); 
+        let completedDeckObj = deckArrayToObject(deckArrayReorderedByKey); 
 
         return completedDeckObj;
     }
-
-    // console.log(deck); 
 
     const makeCards = () => {
         let suits = ['diamond', 'heart', 'club', 'spade'];
@@ -130,8 +124,6 @@ export default function GameContextProvider({ children }) {
 
 
 
-
-
     //THIS IS JP'S WAY OF CREATING A DECK. I MIGHT REFACTOR MINE TO BE MORE LIKE THIS LATER, BUT FOR NOW I AM USING MY LONG WINDED CODE
     // const createDeck = () =>
     // deckArrayToObject(
@@ -145,7 +137,75 @@ export default function GameContextProvider({ children }) {
     //     }))    
     // ).flat());
 
-    const [deck, setDeck] = useState(createDeck())
+    const createBoardObj = (cards) => {
+        let tempDeck = JSON.parse(JSON.stringify(cards));
+
+        let stock = tempDeck.filter(c => c.location === "stock").map(c => c.id);
+        let tableau = tempDeck.filter(c => c.location === "tableau");
+
+        let tableauStacksArr = [];
+        let numOfTabStacks = 7
+        for (let i = 0; i < numOfTabStacks; i++) {
+            let stackNum = i + 1;
+            let stack = tableau.filter(c => c.stackNum === stackNum);
+            stack.sort((a, b) => a.numWithinStack - b.numWithinStack)
+            stack = stack.map(c => c.id); 
+            tableauStacksArr.push(stack);
+        }
+
+
+        let boardObj = {
+            stock: {
+                cardOrder: []
+            }, 
+            waste: {
+                cardOrder: []
+            }, 
+            foundation: {
+                clubs: {
+                    cardOrder: []
+                },
+                diamonds: {
+                    cardOrder: []
+                }, 
+                hearts: {
+                    cardOrder: []
+                },
+                spades: {
+                    cardOrder: []
+                }
+            }, 
+            tableau: {
+                stack1: {
+                    cardOrder: tableauStacksArr[0]
+                },
+                stack2: {
+                    cardOrder: tableauStacksArr[1]
+                }, 
+                stack3: {
+                    cardOrder: tableauStacksArr[2]
+                },
+                stack4: {
+                    cardOrder: tableauStacksArr[3]
+                },
+                stack5: {
+                    cardOrder: tableauStacksArr[4]
+                }, 
+                stack6: {
+                    cardOrder: tableauStacksArr[5]
+                },
+                stack7: {
+                    cardOrder: tableauStacksArr[6]
+                }
+            }
+        }
+
+        return boardObj; 
+    }
+
+
+    ////below is more of JP's original code
+
 
     const changeCard = (cardId, property, value) => {
         
@@ -169,22 +229,26 @@ export default function GameContextProvider({ children }) {
 
     //// Region: Board
 
-    const [board, setBoard] = useState({
-        stock: {},
-        waste: {},
-        foundation: {},
-        tableau: {
-            stack1: {
-                cardOrder: ["spade7", "heart3"]
-            }
-        }
-    })
+    // const [board, setBoard] = useState({
+    //     stock: {},
+    //     waste: {},
+    //     foundation: {},
+    //     tableau: {
+    //         stack1: {
+    //             cardOrder: ["spade7", "heart3"]
+    //         }
+    //     }
+    // })
 
     const getTableauStackCards = stackNumber => board.tableau[`stack${stackNumber}`].cardOrder.map(cardId => deck[cardId]);
+
+    const [deck, setDeck] = useState(createDeck())
+    const [board, setBoard] = useState(createBoardObj(Object.values(deck))); 
 
     return (
         <GameContext.Provider value={{
             deck,
+            board, 
             changeCard,
             getSortedDeck,
             shuffleDeck,

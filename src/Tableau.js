@@ -3,35 +3,6 @@ import TableauStack from './TableauStack';
 
 export default function Tableau(props) {
 
-    const [stacksOfCardsArr, setStacksOfCardsArr] = useState([]); 
-    // const [numOfStacks, setNumOfStacks] = useState(7); 
-
-    useEffect( () => {
-        let tempCardsArr = props.cardsArr;
-
-        let tempStackOfCardsArr = [];
-        let cardCount = 0; 
-        let i = 0; 
-
-        while (cardCount < tempCardsArr.length) {
-            let stackNum = i + 1; 
-            let numOfCardsInStack = stackNum;
-            let stackArr = tempCardsArr.slice(cardCount, cardCount + numOfCardsInStack)
-
-            cardCount += numOfCardsInStack
-            
-            stackArr.map(card => {
-                card.location = 'tableau'; 
-                card.stackNum = stackNum; 
-            })
-            tempStackOfCardsArr.push(stackArr)
-            
-            i++
-        }
-
-        setStacksOfCardsArr(tempStackOfCardsArr)
-    }, []);
-
 
     let stackComponentsArr = []; 
     for (let i = 0; i < stacksOfCardsArr.length; i++) {
