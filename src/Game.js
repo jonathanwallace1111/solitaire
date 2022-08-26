@@ -14,6 +14,7 @@ export default function Game() {
 
     const gameContext = useContext(GameContext); 
     
+    
     console.log(gameContext.deck);
 
 
@@ -21,127 +22,129 @@ export default function Game() {
 
 
 
-    useEffect(() => {
-        let tempDeck = createDeck();
-        setDeck(tempDeck);
-    }, []);
+    // useEffect(() => {
+    //     let tempDeck = createDeck();
+    //     setDeck(tempDeck);
+    // }, []);
 
-    const createDeck = () => {
-        let cards = makeCards();
-        let shuffledCards = shuffleCards(cards);
-        let shuffledCardsWithLocations = assignCardsLocations(shuffledCards);
-        let shuffledCardsWithLocationsAndStacks = assignCardsStacks(shuffledCardsWithLocations);
-        //this statement actually puts the cards in order by key, though the variable name still includes "shuffled"; 
-        let completedDeck = shuffledCardsWithLocationsAndStacks.sort((a, b) => {
-            return a.key - b.key
-        })
+    ////// ALL OF THE BELOW FUNCTIONS THAT HAVE TO DO WITH MAKING AND SHUFFLING THE DECK ARE BEING MOVED TO GameContext.js
 
-        return completedDeck;
-    }
+    // const createDeck = () => {
+    //     let cards = makeCards();
+    //     let shuffledCards = shuffleCards(cards);
+    //     let shuffledCardsWithLocations = assignCardsLocations(shuffledCards);
+    //     let shuffledCardsWithLocationsAndStacks = assignCardsStacks(shuffledCardsWithLocations);
+    //     //this statement actually puts the cards in order by key, though the variable name still includes "shuffled"; 
+    //     let completedDeck = shuffledCardsWithLocationsAndStacks.sort((a, b) => {
+    //         return a.key - b.key
+    //     })
 
-    console.log(deck); 
+    //     return completedDeck;
+    // }
 
-    const makeCards = () => {
-        let suits = ['diamond', 'heart', 'club', 'spade'];
-        let cardRanks = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
-        let tempDeck = [];
-        let cardColor;
+    // console.log(deck); 
 
-        for (let i = 0; i < suits.length; i++) {
-            if (suits[i] === 'diamond' || suits[i] === 'heart') {
-                cardColor = 'red';
-            } else {
-                cardColor = 'black';
-            }
-            for (let j = 0; j < cardRanks.length; j++) {
-                let newCard = {
-                    rank: cardRanks[j],
-                    suit: suits[i],
-                    color: cardColor,
-                    key: (i * cardRanks.length) + j
-                }
-                tempDeck.push(newCard);
-            }
-        }
+    // const makeCards = () => {
+    //     let suits = ['diamond', 'heart', 'club', 'spade'];
+    //     let cardRanks = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
+    //     let tempDeck = [];
+    //     let cardColor;
 
-        return tempDeck;
-    }
+    //     for (let i = 0; i < suits.length; i++) {
+    //         if (suits[i] === 'diamond' || suits[i] === 'heart') {
+    //             cardColor = 'red';
+    //         } else {
+    //             cardColor = 'black';
+    //         }
+    //         for (let j = 0; j < cardRanks.length; j++) {
+    //             let newCard = {
+    //                 rank: cardRanks[j],
+    //                 suit: suits[i],
+    //                 color: cardColor,
+    //                 key: (i * cardRanks.length) + j
+    //             }
+    //             tempDeck.push(newCard);
+    //         }
+    //     }
 
-    const shuffleCards = (cards) => {
-        let tempDeck = JSON.parse(JSON.stringify(cards));
+    //     return tempDeck;
+    // }
 
-        for (let i = tempDeck.length - 1; i > 0; i--) {
-            let randIndex = Math.floor(Math.random() * i + 1);
-            let tempCard = tempDeck[i];
-            tempDeck[i] = tempDeck[randIndex];
-            tempDeck[randIndex] = tempCard;
-        }
+    // const shuffleCards = (cards) => {
+    //     let tempDeck = JSON.parse(JSON.stringify(cards));
 
-        return tempDeck;
-    }
+    //     for (let i = tempDeck.length - 1; i > 0; i--) {
+    //         let randIndex = Math.floor(Math.random() * i + 1);
+    //         let tempCard = tempDeck[i];
+    //         tempDeck[i] = tempDeck[randIndex];
+    //         tempDeck[randIndex] = tempCard;
+    //     }
 
-    const assignCardsLocations = (cards) => {
-        let tempDeck = JSON.parse(JSON.stringify(cards));
+    //     return tempDeck;
+    // }
 
-        let numCardsInTableau = 28;
-        let numCardsInStock = 24;
+    // const assignCardsLocations = (cards) => {
+    //     let tempDeck = JSON.parse(JSON.stringify(cards));
 
-        for (let i = 0; i < tempDeck.length; i++) {
-            let card = tempDeck[i];
+    //     let numCardsInTableau = 28;
+    //     let numCardsInStock = 24;
 
-            if (i < numCardsInTableau) {
-                card.location = 'tableau';
-            } else {
-                card.location = 'stock';
-            }
-        }
+    //     for (let i = 0; i < tempDeck.length; i++) {
+    //         let card = tempDeck[i];
 
-        return tempDeck;
-    }
+    //         if (i < numCardsInTableau) {
+    //             card.location = 'tableau';
+    //         } else {
+    //             card.location = 'stock';
+    //         }
+    //     }
 
-    //for now, I am setting stackNum and numWithinStack to "i + 1" rather than going off the zero based array. 
-    // I feel like it would be strange for stack 3 to have 4 cards in it. Or for the 2nd card in a stack to be number one.
-    // It seems like if there are visual elements that you can actually see, then I shouldn't use the zero based array.  
-    const assignCardsStacks = (cards) => {
-        let tempDeck = JSON.parse(JSON.stringify(cards));
+    //     return tempDeck;
+    // }
 
-        let tableau = tempDeck.filter(c => c.location === 'tableau');
-        let stock = tempDeck.filter(c => c.location === 'stock');
+    // //for now, I am setting stackNum and numWithinStack to "i + 1" rather than going off the zero based array. 
+    // // I feel like it would be strange for stack 3 to have 4 cards in it. Or for the 2nd card in a stack to be number one.
+    // // It seems like if there are visual elements that you can actually see, then I shouldn't use the zero based array.  
+    // const assignCardsStacks = (cards) => {
+    //     let tempDeck = JSON.parse(JSON.stringify(cards));
 
-        let newTableau = [];
-        let cardCount = 0;
-        let i = 0;
+    //     let tableau = tempDeck.filter(c => c.location === 'tableau');
+    //     let stock = tempDeck.filter(c => c.location === 'stock');
 
-        while (cardCount < tableau.length) {
-            let stackNum = i + 1;
-            let numOfCardsInStack = stackNum;
-            let stackArr = tableau.slice(cardCount, cardCount + numOfCardsInStack)
+    //     let newTableau = [];
+    //     let cardCount = 0;
+    //     let i = 0;
 
-            cardCount += numOfCardsInStack
+    //     while (cardCount < tableau.length) {
+    //         let stackNum = i + 1;
+    //         let numOfCardsInStack = stackNum;
+    //         let stackArr = tableau.slice(cardCount, cardCount + numOfCardsInStack)
 
-            for (let i = 0; i < stackArr.length; i++) {
-                let card = stackArr[i];
-                card.stackNum = stackNum;
-                card.numWithinStack = i + 1;
-            }
+    //         cardCount += numOfCardsInStack
 
-            newTableau.push(...stackArr);
+    //         for (let i = 0; i < stackArr.length; i++) {
+    //             let card = stackArr[i];
+    //             card.stackNum = stackNum;
+    //             card.numWithinStack = i + 1;
+    //         }
 
-            i++
-        }
+    //         newTableau.push(...stackArr);
 
-        tableau = newTableau;
+    //         i++
+    //     }
 
-        for (let i = 0; i < stock.length; i++) {
-            let card = stock[i];
-            card.stackNum = 1;
-            card.numWithinStack = i + 1;
-        }
+    //     tableau = newTableau;
 
-        tempDeck = [...tableau, ...stock];
+    //     for (let i = 0; i < stock.length; i++) {
+    //         let card = stock[i];
+    //         card.stackNum = 1;
+    //         card.numWithinStack = i + 1;
+    //     }
 
-        return tempDeck;
-    }
+    //     tempDeck = [...tableau, ...stock];
+
+    //     return tempDeck;
+    // }
 
     const selectCard = () => {
 
