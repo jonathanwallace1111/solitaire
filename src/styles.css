@@ -30,9 +30,20 @@ html {
 
 }
 
-.foundation { 
+.empty {
+    background-color: blue; 
+    width: 100px; 
+    height: 152px;   
+}
 
+.foundation { 
+    display: flex; 
+    flex-direction: row; 
 } 
+
+.foundation-stack {
+    margin-right: 50px; 
+}
 
 .tableau { 
  display: flex; 

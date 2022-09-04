@@ -1,12 +1,13 @@
-import React, { useState, useEffect } from 'react'
+import React from 'react'
 import TableauStack from './TableauStack'; 
 
-export default function Tableau(props) {
 
+export default function Tableau() {
 
+    let numOfStacks = 7;
     let stackComponentsArr = []; 
-    for (let i = 0; i < stacksOfCardsArr.length; i++) {
-        let newStack = <TableauStack key={i} cardsArr={stacksOfCardsArr[i]} stackNum={i} location={'tableau'} /> //I don't like the way I just use i for stackNum here. 
+    for (let i = 0; i < numOfStacks; i++) {
+        let newStack = <TableauStack key={i} stackNum={i +1} /> 
         stackComponentsArr.push(newStack); 
     }
 

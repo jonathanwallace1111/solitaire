@@ -5,10 +5,10 @@ export default function Foundation() {
     return (
         <div className={'foundation'}>
             FOUNDATION
-            {/* <FoundationStack location={'foundation'} /> 
-            <FoundationStack location={'foundation'} /> 
-            <FoundationStack location={'foundation'} /> 
-            <FoundationStack location={'foundation'} />  */}
+            <FoundationStack stackSuit={"diamonds"} /> 
+            <FoundationStack stackSuit={"clubs"} /> 
+            <FoundationStack stackSuit={"hearts"} /> 
+            <FoundationStack stackSuit={"spades"} /> 
         </div>
     )
 }

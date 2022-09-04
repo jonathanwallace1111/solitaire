@@ -1,15 +1,22 @@
-import React from 'react'
+import React, { useEffect, useContext } from 'react'; 
+import Card from './Card';
+import { GameContext } from './GameContext';
 
-export default function Stock(props) {
+export default function Stock() {
+    const gameContext = useContext(GameContext);
     
-    console.log(props.cardsArr); 
+    let stockCardsArr = gameContext.getCardsArrForThisStack("stock", null);
+    // console.log(stockCardsArr);  
+    
+    let emptyOrNot = stockCardsArr.length < 1 ? "empty" : ""; 
 
+    // console.log(gameContext.board);
 
     return (
-        <div>
-                <div className={'stock'}>STOCK</div>
-                    {/* <Stock cardsArr={this.props.cardsArr} location={'stock'} /> */}
-                <div className={'waste'}>WASTE</div>
+        <div className={`stock ${emptyOrNot}`} onClick={gameContext.stockClickHandler} >
+            {stockCardsArr?.length !== 0 &&
+                <Card identity={stockCardsArr[stockCardsArr.length - 1]} />
+            }
         </div>
     )
 }

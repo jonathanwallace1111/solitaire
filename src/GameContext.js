@@ -17,7 +17,7 @@ export default function GameContextProvider({ children }) {
         let deckArrayReorderedByKey = shuffledCardsWithLocationsAndStacks.sort((a, b) => {
             return a.key - b.key
         })
-        let completedDeckObj = deckArrayToObject(deckArrayReorderedByKey); 
+        let completedDeckObj = deckArrayToObject(deckArrayReorderedByKey);
 
         return completedDeckObj;
     }
@@ -40,7 +40,13 @@ export default function GameContextProvider({ children }) {
                     suit: suits[i],
                     color: cardColor,
                     key: (i * cardRanks.length) + j,
-                    id: `${suits[i]}${cardRanks[j]}`
+                    id: `${suits[i]}${cardRanks[j]}`,
+                    topOfStackBool: false,
+                    selectedBool: false,
+                    stackNum: null, //this is only used for tableau. If the card isn't in the tableau, this should be null.
+                    stackSuit: null, //this is only used for foundation. If the card isn't in the foundation, this should be null. 
+                    faceUpOrDown: null, 
+                    topOfStackBool: null
                 }
                 tempDeck.push(newCard);
             }
@@ -75,6 +81,7 @@ export default function GameContextProvider({ children }) {
                 card.location = 'tableau';
             } else {
                 card.location = 'stock';
+                card.faceUpOrDown = 'down';
             }
         }
 
@@ -102,6 +109,15 @@ export default function GameContextProvider({ children }) {
                 let card = stackArr[i];
                 card.stackNum = stackNum;
                 card.numWithinStack = i + 1;
+
+                if (i === stackArr.length -1) {
+                    card.faceUpOrDown = "up"; 
+                    card.topOfStackBool = true;
+                } else {
+                    card.faceUpOrDown = "down"; 
+                    card.topOfStackBool = false; 
+                }
+
             }
 
             newTableau.push(...stackArr);
@@ -122,7 +138,13 @@ export default function GameContextProvider({ children }) {
         return tempDeck;
     }
 
+    const shuffleDeck = () => {
 
+        let tmpDeckList = Object.values(deck).sort((a, b) => !!Math.round(Math.random()) ? 1 : -1)
+            .map((card, i) => ({ ...card, sortOrder: i }));
+
+        setDeck(deck => deckArrayToObject(tmpDeckList));
+    }
 
     //THIS IS JP'S WAY OF CREATING A DECK. I MIGHT REFACTOR MINE TO BE MORE LIKE THIS LATER, BUT FOR NOW I AM USING MY LONG WINDED CODE
     // const createDeck = () =>
@@ -137,51 +159,54 @@ export default function GameContextProvider({ children }) {
     //     }))    
     // ).flat());
 
+    const getSortedDeck = () => Object.values(deck).sort((a, b) => a.sortOrder > b.sortOrder ? 1 : -1);
+
     const createBoardObj = (cards) => {
         let tempDeck = JSON.parse(JSON.stringify(cards));
 
         let stock = tempDeck.filter(c => c.location === "stock").map(c => c.id);
         let tableau = tempDeck.filter(c => c.location === "tableau");
 
+        //This separates tableau into stacks 
         let tableauStacksArr = [];
         let numOfTabStacks = 7
         for (let i = 0; i < numOfTabStacks; i++) {
             let stackNum = i + 1;
             let stack = tableau.filter(c => c.stackNum === stackNum);
             stack.sort((a, b) => a.numWithinStack - b.numWithinStack)
-            stack = stack.map(c => c.id); 
+            stack = stack.map(c => c.id);
             tableauStacksArr.push(stack);
         }
 
 
         let boardObj = {
             stock: {
-                cardOrder: []
-            }, 
+                cardOrder: stock
+            },
             waste: {
                 cardOrder: []
-            }, 
+            },
             foundation: {
+                diamonds: {
+                    cardOrder: []
+                },
                 clubs: {
                     cardOrder: []
                 },
-                diamonds: {
-                    cardOrder: []
-                }, 
                 hearts: {
                     cardOrder: []
                 },
                 spades: {
                     cardOrder: []
                 }
-            }, 
+            },
             tableau: {
                 stack1: {
                     cardOrder: tableauStacksArr[0]
                 },
                 stack2: {
                     cardOrder: tableauStacksArr[1]
-                }, 
+                },
                 stack3: {
                     cardOrder: tableauStacksArr[2]
                 },
@@ -190,7 +215,7 @@ export default function GameContextProvider({ children }) {
                 },
                 stack5: {
                     cardOrder: tableauStacksArr[4]
-                }, 
+                },
                 stack6: {
                     cardOrder: tableauStacksArr[5]
                 },
@@ -200,60 +225,257 @@ export default function GameContextProvider({ children }) {
             }
         }
 
-        return boardObj; 
+        return boardObj;
     }
 
-
-    ////below is more of JP's original code
-
-
+    //This function only changes deck state, not board state. Fix this.
     const changeCard = (cardId, property, value) => {
-        
+
         let tmpDeck = deck;
 
         tmpDeck[cardId][property] = value;
 
+        console.log(cardId);
+
         setDeck(deck => tmpDeck)
     }
 
-    const shuffleDeck = () => {
+    //This function only changes deck state, not board state. Fix this.
+    const changeCardLocation = (card, newLocation, stackNumOrStackSuit) => {
+        //if newLocation is "tableau" then stackNumOrStackSuit should be a number. If new location is "foundation" then stackNumOrStackSuit should be a suit
+        //if newLocation is "stock" or "waste" then stackNumOrStackSuit should be null 
 
-        let tmpDeckList = Object.values(deck).sort((a, b) => !!Math.round(Math.random()) ? 1 : -1)
-                          .map((card, i) => ({...card, sortOrder: i}));
+        const changeOrders = [[card.id, "location", newLocation]];
 
-        setDeck(deck => deckArrayToObject(tmpDeckList));
+        switch (newLocation) {
+            case "stock":
+                changeOrders.push([card.id, "faceUpOrDown", "down"]);
+                break;
+        }
+
+        changeCardBulk(changeOrders)
     }
 
-    const getSortedDeck = () => Object.values(deck).sort((a, b) => a.sortOrder > b.sortOrder ? 1 : -1);
+    //This function only changes deck state, not board state. Fix this.
+    const moveCardToNewTableauStack = (newTableauStackNum) => {
+        //in here I need to set the card's stackSuit to null, because stack num will be used here. 
+        let tempDeck = { ...deck };
+        let tempBoard = {...board};  
+        let selectedCard = tempDeck[selectedCardID];
+
+        let pathToNewTableauStackCardIDArr = tempBoard.tableau[`stack${newTableauStackNum}`].cardOrder; 
+        
+        if (pathToNewTableauStackCardIDArr.length > 0) {
+            let topCardOfNewStackBeforeMovingSelectedCard = pathToNewTableauStackCardIDArr[pathToNewTableauStackCardIDArr.length - 1]; 
+            topCardOfNewStackBeforeMovingSelectedCard.topOfStackBool = false; 
+        }
+
+        //this block is chagning the board  
+        let pathToCardIDArrForSelectedCardStack;      
+        if (selectedCard.location === "waste") {
+            pathToCardIDArrForSelectedCardStack = tempBoard.waste.cardOrder
+        } else if (selectedCard.location === "foundation") {
+            pathToCardIDArrForSelectedCardStack = tempBoard.foundation[selectedCard.stackSuit].cardOrder
+        } else if (selectedCard.location === "tableau") {
+            pathToCardIDArrForSelectedCardStack = tempBoard.tableau[`stack${selectedCard.stackNum}`].cardOrder; 
+        }
+        pathToNewTableauStackCardIDArr.push(pathToCardIDArrForSelectedCardStack.pop())
+
+        //This code is ugly. all it's meant to do is change the topOfStackBool property (to true) of the card we just uncovered after moving the selected card
+        //It is also meant to make the newly uncovered card's faceUpOrDown property to change to "up"
+        let pathToCardIDArrForPreviouslySelectedStack = pathToCardIDArrForSelectedCardStack; 
+        if (pathToCardIDArrForPreviouslySelectedStack.length > 0) {
+            let newTopCardOfPreviousStack = tempDeck[pathToCardIDArrForPreviouslySelectedStack[pathToCardIDArrForPreviouslySelectedStack.length - 1]];
+            newTopCardOfPreviousStack.topOfStackBool = false; 
+            newTopCardOfPreviousStack.faceUpOrDown = "up"; 
+        }
+
+        //this block is changing deck
+        selectedCard.location = "tableau";
+        selectedCard.stackNum = newTableauStackNum;
+        selectedCard.stackSuit = null;
 
 
-    //// Region: Board
+        setBoard(board => tempBoard); 
+        setDeck(deck => tempDeck); 
+        unselectCard();
 
-    // const [board, setBoard] = useState({
-    //     stock: {},
-    //     waste: {},
-    //     foundation: {},
-    //     tableau: {
-    //         stack1: {
-    //             cardOrder: ["spade7", "heart3"]
-    //         }
-    //     }
-    // })
+    }
 
-    const getTableauStackCards = stackNumber => board.tableau[`stack${stackNumber}`].cardOrder.map(cardId => deck[cardId]);
+    //This function only changes deck state, not board state. Fix this.
+    const moveCardToNewFoundationStack = () => {
+        //In here I need to set the card's stackNum to null, because stackSuit will used here. 
 
+        unselectCard();
+    }
+
+    //This function only changes deck state, not board state. Fix this.
+    const changeCardBulk = changeOrders => {
+
+        let tmpDeck = deck;
+
+        changeOrders.forEach(([cardId, property, value]) => {
+            tmpDeck[cardId][property] = value;
+        })
+
+        setDeck(deck => tmpDeck);
+    }
+
+    const changeFaceUpOrDown = (card, value) => {
+        changeCard(card.id, "faceUpOrDown", value);
+    }
+
+    const getCardsArrForThisStack = (location, stackNumber) => {
+        if (stackNumber === null) {
+            return board[location].cardOrder.map(cardId => deck[cardId]);
+        } else {
+            return board[location][`stack${stackNumber}`].cardOrder.map(cardId => deck[cardId]);
+        }
+    }
+
+    const getStockCards = () => board.stock.cardOrder.map(cardID => deck[cardID]);
+
+    const stockClickHandler = (e) => {
+        let tempBoardObj = { ...board };
+        let tempDeck = { ...deck };
+        let idOfCardToBeRemovedFromStock = tempBoardObj.stock.cardOrder[tempBoardObj.stock.cardOrder.length - 1];
+
+        changeCardLocation(tempDeck[idOfCardToBeRemovedFromStock], "waste", null);
+
+        //board
+        tempBoardObj.waste.cardOrder.push(tempBoardObj.stock.cardOrder.pop());
+
+        setBoard(board => tempBoardObj);
+
+        if (cardSelectedBool) {
+            unselectCard();
+        }
+    }
+
+    const wasteClickHandler = (e) => {
+        if (cardSelectedBool) {
+            unselectCard();
+        }
+    }
+
+    const selectCard = (cardID) => {
+        let tempDeck = { ...deck };
+        tempDeck[cardID].selectedBool = true;
+
+        setDeck(deck => tempDeck);
+        setCardSelectedBool(cardSelectedBool => true);
+        setSelectedCardID(selectedCardID => cardID);
+    }
+
+    const unselectCard = () => {
+        let tempDeck = { ...deck };
+        tempDeck[selectedCardID].selectedBool = false;
+        setDeck(deck => tempDeck);
+        setCardSelectedBool(cardSelectedBool => false);
+    }
+
+    //Okay, I think this function might be stupid. All I need is the card ID then I can access all other variables through the actual card itself
+    const getCardIDFromClassListArr = classesStringArray => {
+        let cardSuit, cardRank, cardID;
+
+        //Get suit value from event.target.className
+        if (classesStringArray.includes("D")) {
+            cardSuit = "diamond";
+        } else if (classesStringArray.includes("C")) {
+            cardSuit = "club";
+        } else if (classesStringArray.includes("H")) {
+            cardSuit = "heart";
+        } else if (classesStringArray.includes("S")) {
+            cardSuit = "spade";
+        }
+
+        // Get rank from event.target.className
+        classesStringArray.forEach(classString => {
+            let regex = /\d{1,2}/
+            if (regex.test(classString)) {
+                cardRank = classString;
+            }
+        })
+
+        cardID = `${cardSuit}${cardRank}`;
+
+        return cardID;
+    }
+
+    const tableauCardClickHandler = (e) => {
+        const classListArr = e.target.className.split(" ");
+
+        const newlySelectedCard = deck[getCardIDFromClassListArr(classListArr)];
+
+        if (!cardSelectedBool) {
+            selectCard(newlySelectedCard.id);
+        } else if (cardSelectedBool && newlySelectedCard.id === selectedCardID) {
+            unselectCard();
+        } else if (cardSelectedBool) {
+            const previouslySelectedCard = deck[selectedCardID];
+
+            if (newlySelectedCard.color != previouslySelectedCard.color && newlySelectedCard.rank === previouslySelectedCard.rank + 1) {
+                moveCardToNewTableauStack(newlySelectedCard.stackNum);
+            }
+
+
+
+        }
+    }
+
+    const foundationCardClickHandler = (e) => {
+
+    }
+
+    const emptyFoundationStackClickHandler = (e) => {
+        console.log("empty foundation stack handler");
+    }
+
+    const emptyTableauStackClickHandler = (e) => {
+        console.log("empty tableau stack handler");
+    }
+
+    const moveCard = () => {
+
+    }
+
+    const undo = () => {
+
+    }
+
+    //putting all state instatiations at the bottom here. 
     const [deck, setDeck] = useState(createDeck())
-    const [board, setBoard] = useState(createBoardObj(Object.values(deck))); 
+    const [board, setBoard] = useState(createBoardObj(Object.values(deck)));
+    const [cardSelectedBool, setCardSelectedBool] = useState(false);
+    const [selectedCardID, setSelectedCardID] = useState(null);
+
+    // console.log(board); 
+
 
     return (
         <GameContext.Provider value={{
             deck,
-            board, 
+            board,
+
+            //ChangeCard + Wrappers
             changeCard,
+            changeCardBulk,
+            changeFaceUpOrDown,
+            changeCardLocation,
+
+            //click handlers
+            stockClickHandler,
+            foundationCardClickHandler,
+            tableauCardClickHandler,
+            wasteClickHandler,
+            emptyFoundationStackClickHandler,
+            emptyTableauStackClickHandler,
+
             getSortedDeck,
             shuffleDeck,
             board,
-            getTableauStackCards,
+            getCardsArrForThisStack,
+            getStockCards
         }}>{children}</GameContext.Provider>
     )
 }
