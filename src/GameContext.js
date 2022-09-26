@@ -41,12 +41,15 @@ export default function GameContextProvider({ children }) {
                     color: cardColor,
                     key: (i * cardRanks.length) + j,
                     id: `${suits[i]}${cardRanks[j]}`,
-                    topOfStackBool: false,
+                    //below are variable, above are constant
+                    topOfStackBool: false,  // I don't think I need topOfStackBool anymore. I think selectable is a better general identifier
+                    selectable: false,
                     selectedBool: false,
                     stackNum: null, //this is only used for tableau. If the card isn't in the tableau, this should be null.
                     stackSuit: null, //this is only used for foundation. If the card isn't in the foundation, this should be null. 
-                    faceUpOrDown: null, 
-                    topOfStackBool: null
+                    faceUpOrDown: null,
+                    location: null,
+                    numWithinStack: null // I don't think I need this. I can just utilize their place within the array in the board object
                 }
                 tempDeck.push(newCard);
             }
@@ -110,12 +113,12 @@ export default function GameContextProvider({ children }) {
                 card.stackNum = stackNum;
                 card.numWithinStack = i + 1;
 
-                if (i === stackArr.length -1) {
-                    card.faceUpOrDown = "up"; 
+                if (i === stackArr.length - 1) {
+                    card.faceUpOrDown = "up";
                     card.topOfStackBool = true;
                 } else {
-                    card.faceUpOrDown = "down"; 
-                    card.topOfStackBool = false; 
+                    card.faceUpOrDown = "down";
+                    card.topOfStackBool = false;
                 }
 
             }
@@ -251,63 +254,15 @@ export default function GameContextProvider({ children }) {
             case "stock":
                 changeOrders.push([card.id, "faceUpOrDown", "down"]);
                 break;
+            case "waste":
+                changeOrders.push([card.id, "faceUpOrDown", "up"]);
+
+                break;
         }
 
         changeCardBulk(changeOrders)
     }
 
-    //This function only changes deck state, not board state. Fix this.
-    const moveCardToNewTableauStack = (newTableauStackNum) => {
-        //in here I need to set the card's stackSuit to null, because stack num will be used here. 
-        let tempDeck = { ...deck };
-        let tempBoard = {...board};  
-        let selectedCard = tempDeck[selectedCardID];
-
-        let pathToNewTableauStackCardIDArr = tempBoard.tableau[`stack${newTableauStackNum}`].cardOrder; 
-        
-        if (pathToNewTableauStackCardIDArr.length > 0) {
-            let topCardOfNewStackBeforeMovingSelectedCard = pathToNewTableauStackCardIDArr[pathToNewTableauStackCardIDArr.length - 1]; 
-            topCardOfNewStackBeforeMovingSelectedCard.topOfStackBool = false; 
-        }
-
-        //this block is chagning the board  
-        let pathToCardIDArrForSelectedCardStack;      
-        if (selectedCard.location === "waste") {
-            pathToCardIDArrForSelectedCardStack = tempBoard.waste.cardOrder
-        } else if (selectedCard.location === "foundation") {
-            pathToCardIDArrForSelectedCardStack = tempBoard.foundation[selectedCard.stackSuit].cardOrder
-        } else if (selectedCard.location === "tableau") {
-            pathToCardIDArrForSelectedCardStack = tempBoard.tableau[`stack${selectedCard.stackNum}`].cardOrder; 
-        }
-        pathToNewTableauStackCardIDArr.push(pathToCardIDArrForSelectedCardStack.pop())
-
-        //This code is ugly. all it's meant to do is change the topOfStackBool property (to true) of the card we just uncovered after moving the selected card
-        //It is also meant to make the newly uncovered card's faceUpOrDown property to change to "up"
-        let pathToCardIDArrForPreviouslySelectedStack = pathToCardIDArrForSelectedCardStack; 
-        if (pathToCardIDArrForPreviouslySelectedStack.length > 0) {
-            let newTopCardOfPreviousStack = tempDeck[pathToCardIDArrForPreviouslySelectedStack[pathToCardIDArrForPreviouslySelectedStack.length - 1]];
-            newTopCardOfPreviousStack.topOfStackBool = false; 
-            newTopCardOfPreviousStack.faceUpOrDown = "up"; 
-        }
-
-        //this block is changing deck
-        selectedCard.location = "tableau";
-        selectedCard.stackNum = newTableauStackNum;
-        selectedCard.stackSuit = null;
-
-
-        setBoard(board => tempBoard); 
-        setDeck(deck => tempDeck); 
-        unselectCard();
-
-    }
-
-    //This function only changes deck state, not board state. Fix this.
-    const moveCardToNewFoundationStack = () => {
-        //In here I need to set the card's stackNum to null, because stackSuit will used here. 
-
-        unselectCard();
-    }
 
     //This function only changes deck state, not board state. Fix this.
     const changeCardBulk = changeOrders => {
@@ -319,6 +274,60 @@ export default function GameContextProvider({ children }) {
         })
 
         setDeck(deck => tmpDeck);
+    }
+
+    const moveCardToNewTableauStack = (newTableauStackNum) => {
+        //in here I need to set the card's stackSuit to null, because stack num will be used here. 
+        let tempDeck = { ...deck };
+        let tempBoard = { ...board };
+        let selectedCard = tempDeck[selectedCardID];
+
+        let pathToNewTableauStackCardIDArr = tempBoard.tableau[`stack${newTableauStackNum}`].cardOrder;
+        console.log(pathToNewTableauStackCardIDArr); 
+
+        if (pathToNewTableauStackCardIDArr.length > 0) {
+            let topCardOfNewStackBeforeMovingSelectedCard = tempDeck[pathToNewTableauStackCardIDArr[pathToNewTableauStackCardIDArr.length - 1]];
+            topCardOfNewStackBeforeMovingSelectedCard.topOfStackBool = false;
+        }
+
+        //this block is chagning the board  
+        // this code only works for moving a single card
+        let pathToCardIDArrForSelectedCardStack;
+        if (selectedCard.location === "waste") {
+            pathToCardIDArrForSelectedCardStack = tempBoard.waste.cardOrder
+        } else if (selectedCard.location === "foundation") {
+            pathToCardIDArrForSelectedCardStack = tempBoard.foundation[selectedCard.stackSuit].cardOrder
+        } else if (selectedCard.location === "tableau") {
+            pathToCardIDArrForSelectedCardStack = tempBoard.tableau[`stack${selectedCard.stackNum}`].cardOrder;
+        }
+        pathToNewTableauStackCardIDArr.push(pathToCardIDArrForSelectedCardStack.pop())
+
+        //This code is ugly. all it's meant to do is change the topOfStackBool property (to true) of the card we just uncovered after moving the selected card
+        //It is also meant to make the newly uncovered card's faceUpOrDown property to change to "up"
+        let pathToCardIDArrForPreviouslySelectedStack = pathToCardIDArrForSelectedCardStack;
+        if (pathToCardIDArrForPreviouslySelectedStack.length > 0) {
+            let newTopCardOfPreviousStack = tempDeck[pathToCardIDArrForPreviouslySelectedStack[pathToCardIDArrForPreviouslySelectedStack.length - 1]];
+            newTopCardOfPreviousStack.topOfStackBool = false;
+            newTopCardOfPreviousStack.faceUpOrDown = "up";
+        }
+
+        //this block is changing deck
+        selectedCard.location = "tableau";
+        selectedCard.stackNum = newTableauStackNum;
+        selectedCard.stackSuit = null;
+
+
+        setBoard(board => tempBoard);
+        setDeck(deck => tempDeck);
+        unselectCard();
+
+    }
+
+    //This function only changes deck state, not board state. Fix this.
+    const moveCardToNewFoundationStack = () => {
+        //In here I need to set the card's stackNum to null, because stackSuit will used here. 
+
+        unselectCard();
     }
 
     const changeFaceUpOrDown = (card, value) => {
@@ -338,18 +347,51 @@ export default function GameContextProvider({ children }) {
     const stockClickHandler = (e) => {
         let tempBoardObj = { ...board };
         let tempDeck = { ...deck };
-        let idOfCardToBeRemovedFromStock = tempBoardObj.stock.cardOrder[tempBoardObj.stock.cardOrder.length - 1];
 
-        changeCardLocation(tempDeck[idOfCardToBeRemovedFromStock], "waste", null);
-
-        //board
-        tempBoardObj.waste.cardOrder.push(tempBoardObj.stock.cardOrder.pop());
-
-        setBoard(board => tempBoardObj);
+        if (tempBoardObj.stock.cardOrder.length > 0) {
+            let idOfCardToBeRemovedFromStock = tempBoardObj.stock.cardOrder[tempBoardObj.stock.cardOrder.length - 1];
+            changeCardLocation(tempDeck[idOfCardToBeRemovedFromStock], "waste", null);
+            tempBoardObj.waste.cardOrder.push(tempBoardObj.stock.cardOrder.pop());
+            //set board is done here because changeCardLocation() doesn't mess with board as of now. 
+            setBoard(board => tempBoardObj);
+        } else {
+            moveAllOfWasteBackToStock(); 
+        }
 
         if (cardSelectedBool) {
             unselectCard();
         }
+    }
+
+    const moveAllOfWasteBackToStock = () => {
+        let tempDeck = { ...deck };
+        let tempBoard = { ...board }; 
+
+        //this is all changing the deck
+        let wasteCardsArr = getCardsArrForThisStack("waste", null); 
+        wasteCardsArr.reverse(); 
+        wasteCardsArr.forEach( (c, i, arr) => {
+            if (i === arr.length - 1) {
+                c.topOfStackBool = true; 
+            } else {
+                c.topOfStackBool = false; 
+            }
+
+            c.selectable = false;
+            c.selectedBool = false; 
+            c.stackNum = null;
+            c.stackSuit = null;
+            c.faceUpOrDown = "down";
+            c.location = "stock"; 
+            c.numWithinStack = i + 1; 
+        })
+
+        //this is all changing the board
+        board.stock.cardOrder = board.waste.cardOrder.reverse(); 
+        board.waste.cardOrder = []; 
+
+        setDeck(deck => tempDeck);
+        setBoard(board => tempBoard); 
     }
 
     const wasteClickHandler = (e) => {

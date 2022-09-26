@@ -10,20 +10,16 @@ import { GameContext } from './GameContext';
 
 export default function Game() {
     const gameContext = useContext(GameContext); 
-    // console.log(gameContext.deck);
-    // console.log(gameContext.board);
-    // console.log(gameContext.board)
 
     return (
         <div className={'game-outer-container'}>
             {/* <InGameMenu /> */}
             <div className={'stock-and-foundation-container'}>
                 <Stock />
-                <Waste deck={gameContext.deck} />
+                <Waste/>
                 <Foundation /> 
             </div>
             <Tableau /> 
-
         </div>
     )
 }
